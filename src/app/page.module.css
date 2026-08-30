@@ -84,6 +84,57 @@
   font-weight: 500;
 }
 
+/* src/app/page.module.css */
+.appContainer {
+  height: 100vh; 
+  background-color: #121212; 
+  color: #e0e0e0;
+}
+
+.column {
+  background-color: #1e1e1e;
+  padding: 16px;
+  overflow-y: auto; 
+  height: 100%; /* Ensures columns fill the panel height */
+}
+
+/* The drag handles between the columns */
+.resizeHandle {
+  width: 8px;
+  background-color: #2a2a2a;
+  cursor: col-resize; 
+  transition: background-color 0.2s ease;
+}
+
+/* The new v4 way to style the handle when hovered or dragged */
+.resizeHandle[data-separator="hover"],
+.resizeHandle[data-separator="active"] {
+  background-color: #555; 
+}
+
+.resizeHandle:hover,
+.resizeHandle[data-resize-handle-active] {
+  background-color: #555; /* Highlights when hovered or dragged */
+}
+
+/* Button styles remain the same */
+.unitButton {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.unitButton:hover {
+  background-color: #3a3a3a;
+}
+
 a.primary {
   background: var(--text-primary);
   color: var(--background);
