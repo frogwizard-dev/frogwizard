@@ -27,12 +27,13 @@ export default function Home() {
     setRoster([...roster, unit]);
   };
 
+  const handleRemoveUnit = (indexToRemove: number) => {
+    setRoster(roster.filter((_, index) => index !== indexToRemove));
+  };
+
   return (
     <main className={styles.appContainer}>
-      
-      {/* THE UPDATED HEADER */}
       <header className={styles.header}>
-        {/* Group 1: Logo and Title on the left */}
         <div className={styles.headerBrand}>
           <Image 
             src="/frogwizard.png" 
@@ -44,13 +45,11 @@ export default function Home() {
           <h1 className={styles.headerTitle}>Frogwizard</h1>
         </div>
         
-        {/* Group 2: Points on the right */}
         <div className={styles.pointsCounter}>
           Total Points: {totalPoints}
         </div>
       </header>
 
-      {/* THE WORKSPACE */}
       <div className={styles.workspace}>
         <Group orientation="horizontal">
           
@@ -61,7 +60,11 @@ export default function Home() {
           <Separator className={styles.resizeHandle} />
 
           <Panel defaultSize={40} minSize={20} className={styles.column}>
-            <MusterList roster={roster} onFocusUnit={setFocusedUnit} />
+            <MusterList 
+              roster={roster} 
+              onFocusUnit={setFocusedUnit} 
+              onRemoveUnit={handleRemoveUnit} 
+            />
           </Panel>
 
           <Separator className={styles.resizeHandle} />

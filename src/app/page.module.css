@@ -84,7 +84,6 @@
   font-weight: 500;
 }
 
-/* src/app/page.module.css */
 .appContainer {
   display: flex;
   flex-direction: column;
@@ -96,7 +95,7 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* This pushes Group 1 and Group 2 apart */
+  justify-content: space-between;
   height: 80px; 
   padding: 0 24px;
   background-color: #18181b;
@@ -105,7 +104,7 @@
 
 .headerBrand {
   display: flex;
-  align-items: center; /* This centers the logo and text vertically with each other */
+  align-items: center; 
 }
 
 .logo {
@@ -132,8 +131,8 @@
 }
 
 .workspace {
-  flex: 1; /* Tells the workspace to fill the remaining screen height */
-  overflow: hidden; /* Keeps the scrolling confined to the individual panels */
+  flex: 1; 
+  overflow: hidden; 
   padding: 16px;
 }
 
@@ -141,10 +140,9 @@
   background-color: #1e1e1e;
   padding: 16px;
   overflow-y: auto; 
-  height: 100%; /* Ensures columns fill the panel height */
+  height: 100%;
 }
 
-/* The drag handles between the columns */
 .resizeHandle {
   width: 8px;
   background-color: #2a2a2a;
@@ -152,7 +150,6 @@
   transition: background-color 0.2s ease;
 }
 
-/* The new v4 way to style the handle when hovered or dragged */
 .resizeHandle[data-separator="hover"],
 .resizeHandle[data-separator="active"] {
   background-color: #555; 
@@ -160,12 +157,14 @@
 
 .resizeHandle:hover,
 .resizeHandle[data-resize-handle-active] {
-  background-color: #555; /* Highlights when hovered or dragged */
+  background-color: #555; 
 }
 
-/* Button styles remain the same */
-.unitButton {
-  display: block;
+/* Replaces .unitButton for the middle column */
+.rosterItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   padding: 10px;
   margin-bottom: 8px;
@@ -177,8 +176,24 @@
   text-align: left;
 }
 
-.unitButton:hover {
+.rosterItem:hover {
   background-color: #3a3a3a;
+}
+
+/* The red X button */
+.deleteButton {
+  background-color: #ff4a4a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.deleteButton:hover {
+  background-color: #ff1a1a;
 }
 
 a.primary {
@@ -191,7 +206,6 @@ a.secondary {
   border-color: var(--button-secondary-border);
 }
 
-/* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   a.primary:hover {
     background: var(--button-primary-hover);
