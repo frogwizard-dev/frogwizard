@@ -86,9 +86,55 @@
 
 /* src/app/page.module.css */
 .appContainer {
+  display: flex;
+  flex-direction: column;
   height: 100vh; 
   background-color: #121212; 
   color: #e0e0e0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* This pushes Group 1 and Group 2 apart */
+  height: 80px; 
+  padding: 0 24px;
+  background-color: #18181b;
+  border-bottom: 1px solid #27272a;
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center; /* This centers the logo and text vertically with each other */
+}
+
+.logo {
+  height: 64px; 
+  width: auto;
+  margin-right: 16px;
+  border-radius: 8px; 
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.pointsCounter {
+  background-color: #2a2a2a;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.workspace {
+  flex: 1; /* Tells the workspace to fill the remaining screen height */
+  overflow: hidden; /* Keeps the scrolling confined to the individual panels */
+  padding: 16px;
 }
 
 .column {
