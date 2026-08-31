@@ -1,81 +1,42 @@
-'use client';
+// src/app/page.tsx
+// Server Component - this never reaches the browser, so it can read the token.
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Group, Panel, Separator } from 'react-resizable-panels';
-import styles from './page.module.css';
+import Workspace from '@/components/Workspace';
+import { listFactions, loadFaction } from '@/lib/data';
 
-import AvailableUnits from '@/components/AvailableUnits';
-import MusterList from '@/components/MusterList';
-import Datasheet from '@/components/Datasheet';
+// Kept separate from the component so no JSX is built inside the try/catch -
+// React wouldn't catch render errors there anyway.
+async function loadData(slug: string) {
+  try {
+    const factions = await listFactions('aos');
+    const faction = await loadFaction('aos', slug);
+    return { factions, faction, error: null };
+  } catch (error) {
+    return {
+      factions: [],
+      faction: null,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
 
-const availableUnits = [
-  { id: 1, name: 'Night Goblin Shaman', points: 85, type: 'Character' },
-  { id: 2, name: 'Black Orc Mob', points: 140, type: 'Core' },
-  { id: 3, name: 'Wolf Chariot', points: 90, type: 'Special' },
-  { id: 4, name: 'Arachnarok Spider', points: 290, type: 'Rare' }
-];
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ faction?: string }>;
+}) {
+  // searchParams is a promise in this version of Next.
+  const { faction: requested } = await searchParams;
+  const { factions, faction, error } = await loadData(requested ?? 'ironjawz');
 
-export default function Home() {
-  const [roster, setRoster] = useState<any[]>([]);
-  const [focusedUnit, setFocusedUnit] = useState(null);
+  if (!faction) {
+    return (
+      <main style={{ padding: '2rem' }}>
+        <h1>Could not load army data</h1>
+        <p style={{ color: '#b00' }}>{error}</p>
+      </main>
+    );
+  }
 
-  // THE MATH: Loops through the roster and sums up the points
-  const totalPoints = roster.reduce((sum, unit) => sum + unit.points, 0);
-
-  const handleAddUnit = (unit: any) => {
-    setRoster([...roster, unit]);
-  };
-
-  const handleRemoveUnit = (indexToRemove: number) => {
-    setRoster(roster.filter((_, index) => index !== indexToRemove));
-  };
-
-  return (
-    <main className={styles.appContainer}>
-      <header className={styles.header}>
-        <div className={styles.headerBrand}>
-          <Image 
-            src="/frogwizard.png" 
-            alt="Frogwizard Logo" 
-            width={64} 
-            height={64} 
-            className={styles.logo} 
-          />
-          <h1 className={styles.headerTitle}>Frogwizard</h1>
-        </div>
-        
-        <div className={styles.pointsCounter}>
-          Total Points: {totalPoints}
-        </div>
-      </header>
-
-      <div className={styles.workspace}>
-        <Group orientation="horizontal">
-          
-          <Panel defaultSize={25} minSize={15} className={styles.column}>
-            <AvailableUnits units={availableUnits} onAddUnit={handleAddUnit} />
-          </Panel>
-
-          <Separator className={styles.resizeHandle} />
-
-          <Panel defaultSize={40} minSize={20} className={styles.column}>
-            <MusterList 
-              roster={roster} 
-              onFocusUnit={setFocusedUnit} 
-              onRemoveUnit={handleRemoveUnit} 
-            />
-          </Panel>
-
-          <Separator className={styles.resizeHandle} />
-
-          <Panel defaultSize={35} minSize={20} className={styles.column}>
-            <Datasheet unit={focusedUnit} />
-          </Panel>
-
-        </Group>
-      </div>
-
-    </main>
-  );
+  return <Workspace faction={faction} factions={factions} />;
 }

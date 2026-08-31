@@ -1,6 +1,15 @@
 import styles from '@/app/page.module.css';
+import type { RosterEntry, Unit } from '@/lib/units';
 
-export default function MusterList({ roster, onFocusUnit, onRemoveUnit }: { roster: any[], onFocusUnit: any, onRemoveUnit: any }) {
+export default function MusterList({
+  roster,
+  onFocusUnit,
+  onRemoveUnit,
+}: {
+  roster: RosterEntry[];
+  onFocusUnit: (unit: Unit) => void;
+  onRemoveUnit: (entryId: number) => void;
+}) {
   return (
     <>
       <h2>Muster List</h2>
@@ -8,18 +17,21 @@ export default function MusterList({ roster, onFocusUnit, onRemoveUnit }: { rost
       {roster.length === 0 ? (
         <p>Your list is empty. Add a unit from the left.</p>
       ) : (
-        roster.map((unit, index) => (
-          <div 
-            key={index} 
+        roster.map((entry) => (
+          <div
+            key={entry.entryId}
             className={styles.rosterItem}
-            onClick={() => onFocusUnit(unit)}
+            onClick={() => onFocusUnit(entry.unit)}
           >
-            <span>{unit.name}</span>
-            <button 
+            <span>
+              {entry.unit.name}
+              {entry.unit.points !== null && ` - ${entry.unit.points} pts`}
+            </span>
+            <button
               className={styles.deleteButton}
               onClick={(e) => {
                 e.stopPropagation(); // Stops the click from selecting the unit
-                onRemoveUnit(index);
+                onRemoveUnit(entry.entryId);
               }}
             >
               X
