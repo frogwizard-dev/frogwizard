@@ -1,15 +1,18 @@
 // src/app/page.tsx
-// Server Component - this never reaches the browser, so it can read the token.
-
 import Workspace from '@/components/Workspace';
 import { listFactions, loadFaction } from '@/lib/data';
+import type { GameId } from '@/lib/games';
 
-// Kept separate from the component so no JSX is built inside the try/catch -
-// React wouldn't catch render errors there anyway.
-async function loadData(slug: string) {
+// Helper to load factions and selected army data for any game
+async function loadData(game: GameId, requestedSlug?: string) {
   try {
-    const factions = await listFactions('aos');
-    const faction = await loadFaction('aos', slug);
+    const factions = await listFactions(game);
+    let targetSlug = requestedSlug;
+    if (!targetSlug || !factions.some((f) => f.slug === targetSlug)) {
+      targetSlug = factions[0]?.slug ?? 'bretonnia';
+    }
+
+    const faction = await loadFaction(game, targetSlug);
     return { factions, faction, error: null };
   } catch (error) {
     return {
@@ -23,20 +26,31 @@ async function loadData(slug: string) {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ faction?: string }>;
+  searchParams: Promise<{ game?: string; faction?: string }>;
 }) {
-  // searchParams is a promise in this version of Next.
-  const { faction: requested } = await searchParams;
-  const { factions, faction, error } = await loadData(requested ?? 'ironjawz');
+  const { game: requestedGame, faction: requestedFaction } = await searchParams;
+
+  const currentGame: GameId =
+    requestedGame === 'aos' || requestedGame === '40k' || requestedGame === 'tow'
+      ? requestedGame
+      : 'tow';
+
+  const { factions, faction, error } = await loadData(currentGame, requestedFaction);
 
   if (!faction) {
     return (
       <main style={{ padding: '2rem' }}>
         <h1>Could not load army data</h1>
-        <p style={{ color: '#b00' }}>{error}</p>
+        <p style={{ color: '#ff4a4a' }}>{error}</p>
       </main>
     );
   }
 
-  return <Workspace faction={faction} factions={factions} />;
+  return (
+    <Workspace
+      currentGame={currentGame}
+      faction={faction}
+      factions={factions}
+    />
+  );
 }

@@ -1,7 +1,9 @@
+'use client';
+
+import { useState } from 'react';
 import styles from '@/app/page.module.css';
 import type { Faction, Unit } from '@/lib/units';
 
-// I use this 3 times (units, terrain, manifestations) so it's its own bit.
 function Section({
   title,
   units,
@@ -11,22 +13,30 @@ function Section({
   units: Unit[];
   onAddUnit: (unit: Unit) => void;
 }) {
-  // don't show an empty heading if the faction hasn't got any
   if (units.length === 0) {
     return null;
   }
 
   return (
-    <>
-      <h3>{title}</h3>
-      {units.map((unit) => (
-        <button key={unit.id} className={styles.unitButton} onClick={() => onAddUnit(unit)}>
-          {unit.name}
-          {unit.points !== null && ` (${unit.points} pts)`}
-          {unit.isLegends && ' - Legends'}
-        </button>
-      ))}
-    </>
+    <details open style={{ marginBottom: '16px' }}>
+      <summary className={styles.categoryHeader}>
+        {title} ({units.length})
+      </summary>
+
+      <div style={{ marginTop: '8px' }}>
+        {units.map((unit) => (
+          <button
+            key={unit.id}
+            className={styles.unitButton}
+            onClick={() => onAddUnit(unit)}
+          >
+            {unit.name}
+            {unit.points !== null && ` (${unit.points} pts)`}
+            {unit.isLegends && ' - Legends'}
+          </button>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -37,14 +47,59 @@ export default function AvailableUnits({
   faction: Faction;
   onAddUnit: (unit: Unit) => void;
 }) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filterUnits = (unitList: Unit[]) => {
+    if (!searchTerm.trim()) {
+      return unitList;
+    }
+
+    // Convert to lowercase for case-insensitive search
+    return unitList.filter((unit) =>
+      unit.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  const filteredGroups = faction.groups.map((group) => ({
+    title: group.title,
+    units: filterUnits(group.units),
+  }));
+
+  let totalMatches = 0;
+  for (const group of filteredGroups) {
+    totalMatches += group.units.length;
+  }
+
   return (
     <>
       <h2>{faction.name}</h2>
       <hr />
-      <Section title="Units" units={faction.units} onAddUnit={onAddUnit} />
-      {/* these two are free in 4th ed, so they have no points on them */}
-      <Section title="Faction Terrain" units={faction.terrain} onAddUnit={onAddUnit} />
-      <Section title="Manifestations" units={faction.manifestations} onAddUnit={onAddUnit} />
+
+      {/* Search Input Box */}
+      <input
+        type="text"
+        placeholder="Search units..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className={styles.searchInput}
+      />
+
+      {/* If nothing matches the search, show a message */}
+      {totalMatches === 0 && searchTerm.trim() !== '' && (
+        <p style={{ color: '#888', fontStyle: 'italic' }}>
+          No units found matching &quot;{searchTerm}&quot;
+        </p>
+      )}
+
+      {/* Render each category section (Characters, Core, Special, etc.) */}
+      {filteredGroups.map((group) => (
+        <Section
+          key={group.title}
+          title={group.title}
+          units={group.units}
+          onAddUnit={onAddUnit}
+        />
+      ))}
     </>
   );
 }

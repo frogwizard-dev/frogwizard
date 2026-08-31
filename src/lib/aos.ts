@@ -6,7 +6,7 @@
 //   { faction: "Ironjawz", alliance: "Destruction", warscrolls: [ ... ] }
 // and each warscroll has about 45 fields on it. I only use some of them.
 
-import type { Faction, Stat, Unit } from './units';
+import type { Faction, Stat, Unit, UnitGroup } from './units';
 
 // the raw json has loads of fields I don't use, so I'm not typing it all out
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,6 +101,7 @@ export function parseAosFaction(slug: string, data: any): Faction {
       abilities: abilities,
       isLegends: warscroll.isLegends,
       lore: warscroll.lore,
+      category: null,
     };
 
     // Faction terrain and manifestations (endless spells) are warscrolls in the
@@ -121,6 +122,30 @@ export function parseAosFaction(slug: string, data: any): Faction {
   terrain.sort((a, b) => a.name.localeCompare(b.name));
   manifestations.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Helper to check if a unit has a specific keyword
+  const hasKeyword = (unit: Unit, keyword: string) =>
+    unit.keywords.some((k) => k.toLowerCase() === keyword.toLowerCase());
+
+  // Split into Heroes (including Warmasters) and standard Units
+  const heroes = units.filter(
+    (u) => hasKeyword(u, 'hero') || hasKeyword(u, 'warmaster')
+  );
+  const otherUnits = units.filter((u) => !heroes.includes(u));
+
+  const groups: UnitGroup[] = [];
+  if (heroes.length > 0) {
+    groups.push({ title: 'Heroes', units: heroes });
+  }
+  if (otherUnits.length > 0) {
+    groups.push({ title: 'Units', units: otherUnits });
+  }
+  if (terrain.length > 0) {
+    groups.push({ title: 'Faction Terrain', units: terrain });
+  }
+  if (manifestations.length > 0) {
+    groups.push({ title: 'Manifestations', units: manifestations });
+  }
+
   return {
     slug: slug,
     name: data.faction,
@@ -128,5 +153,6 @@ export function parseAosFaction(slug: string, data: any): Faction {
     units: units,
     terrain: terrain,
     manifestations: manifestations,
+    groups: groups,
   };
 }

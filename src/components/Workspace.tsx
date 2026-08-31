@@ -11,11 +11,21 @@ import MusterList from '@/components/MusterList';
 import Datasheet from '@/components/Datasheet';
 import type { Faction, RosterEntry, Unit } from '@/lib/units';
 import type { FactionSummary } from '@/lib/data';
+import type { GameId } from '@/lib/games';
+
+// The list of supported tabletop games
+const GAMES: { id: GameId; name: string }[] = [
+  { id: 'tow', name: 'The Old World' },
+  { id: 'aos', name: 'Age of Sigmar' },
+  { id: '40k', name: 'Warhammer 40,000' },
+];
 
 export default function Workspace({
+  currentGame,
   faction,
   factions,
 }: {
+  currentGame: GameId;
   faction: Faction;
   factions: FactionSummary[];
 }) {
@@ -30,17 +40,25 @@ export default function Workspace({
   const handleAddUnit = (unit: Unit) => {
     setRoster([...roster, { entryId: nextEntryId, unit }]);
     setNextEntryId(nextEntryId + 1);
+    setFocusedUnit(unit); // automatically show datasheet for the added unit
   };
 
   const handleRemoveUnit = (entryId: number) => {
     setRoster(roster.filter((entry) => entry.entryId !== entryId));
   };
 
-  // Pushing ?faction=... re-runs the server component, which fetches the new data.
+  // Switching game: reset army list and navigate to the new game
+  const handleChangeGame = (gameId: string) => {
+    setRoster([]);
+    setFocusedUnit(null);
+    router.push(`/?game=${gameId}`);
+  };
+
+  // Switching faction within the current game
   const handleChangeFaction = (slug: string) => {
     setRoster([]);
     setFocusedUnit(null);
-    router.push(`/?faction=${slug}`);
+    router.push(`/?game=${currentGame}&faction=${slug}`);
   };
 
   return (
@@ -57,17 +75,36 @@ export default function Workspace({
           <h1 className={styles.headerTitle}>Frogwizard</h1>
         </div>
 
-        <select
-          value={faction.slug}
-          onChange={(e) => handleChangeFaction(e.target.value)}
-          aria-label="Choose a faction"
-        >
-          {factions.map((option) => (
-            <option key={option.slug} value={option.slug}>
-              {option.name}
-            </option>
-          ))}
-        </select>
+        {/* Dropdowns for switching Game and Army */}
+        <div className={styles.headerControls}>
+          {/* Game Dropdown */}
+          <select
+            value={currentGame}
+            onChange={(e) => handleChangeGame(e.target.value)}
+            aria-label="Choose a game"
+            className={styles.factionSelect}
+          >
+            {GAMES.map((game) => (
+              <option key={game.id} value={game.id}>
+                {game.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Faction / Army Dropdown */}
+          <select
+            value={faction.slug}
+            onChange={(e) => handleChangeFaction(e.target.value)}
+            aria-label="Choose a faction"
+            className={styles.factionSelect}
+          >
+            {factions.map((option) => (
+              <option key={option.slug} value={option.slug}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className={styles.pointsCounter}>Total Points: {totalPoints}</div>
       </header>
@@ -83,6 +120,7 @@ export default function Workspace({
           <Panel defaultSize={40} minSize={20} className={styles.column}>
             <MusterList
               roster={roster}
+              focusedUnit={focusedUnit}
               onFocusUnit={setFocusedUnit}
               onRemoveUnit={handleRemoveUnit}
             />
