@@ -100,12 +100,30 @@ export async function loadFaction(game: GameId, slug: string): Promise<Faction> 
     return parse40kFaction(slug, data, wargear, keywords, publications);
   }
 
-  // Old World. Only needs the special rules for the ability text.
+  // Old World. Needs special rules, magic items, and weapons/equipment.
   const specialRules = await fetchRepoJson(
     settings.repo,
     settings.extractRoot + '/special-rules.json',
     settings.branch,
     'tow:special-rules',
   );
-  return parseOldWorldFaction(slug, data, specialRules);
+  const magicItemsData = await fetchRepoJson(
+    settings.repo,
+    settings.extractRoot + '/magic-items.json',
+    settings.branch,
+    'tow:magic-items',
+  );
+  const weaponsData = await fetchRepoJson(
+    settings.repo,
+    settings.extractRoot + '/weapons.json',
+    settings.branch,
+    'tow:weapons',
+  );
+  return parseOldWorldFaction(
+    slug,
+    data,
+    specialRules,
+    magicItemsData,
+    weaponsData,
+  );
 }

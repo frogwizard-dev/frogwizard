@@ -10,6 +10,7 @@ import AvailableUnits from '@/components/AvailableUnits';
 import MusterList from '@/components/MusterList';
 import Datasheet from '@/components/Datasheet';
 import type { Faction, RosterEntry, Unit } from '@/lib/units';
+import { calculateEntryPoints } from '@/lib/units';
 import type { FactionSummary } from '@/lib/data';
 import type { GameId } from '@/lib/games';
 
@@ -31,35 +32,80 @@ export default function Workspace({
 }) {
   const router = useRouter();
   const [roster, setRoster] = useState<RosterEntry[]>([]);
-  const [focusedUnit, setFocusedUnit] = useState<Unit | null>(null);
+  const [focusedEntryId, setFocusedEntryId] = useState<number | null>(null);
   const [nextEntryId, setNextEntryId] = useState(1);
 
-  // THE MATH: sums the roster. Units with no battle profile count as 0.
-  const totalPoints = roster.reduce((sum, entry) => sum + (entry.unit.points ?? 0), 0);
+  // THE MATH: sums the roster with all models & options accounted for!
+  const totalPoints = roster.reduce((sum, entry) => sum + calculateEntryPoints(entry), 0);
 
   const handleAddUnit = (unit: Unit) => {
-    setRoster([...roster, { entryId: nextEntryId, unit }]);
+    const entryId = nextEntryId;
+
+    // Pick default options (e.g. default weapon loadout)
+    const defaultOptionIds: string[] = [];
+    if (unit.optionGroups) {
+      for (const group of unit.optionGroups) {
+        for (const choice of group.choices) {
+          if (choice.isDefault) {
+            defaultOptionIds.push(choice.id);
+          }
+        }
+      }
+    }
+
+    const newEntry: RosterEntry = {
+      entryId,
+      unit,
+      modelCount: unit.unitSizeConfig ? unit.unitSizeConfig.min : (unit.modelCount ?? 1),
+      selectedOptionIds: defaultOptionIds,
+    };
+
+    setRoster([...roster, newEntry]);
     setNextEntryId(nextEntryId + 1);
-    setFocusedUnit(unit); // automatically show datasheet for the added unit
+    setFocusedEntryId(entryId);
+  };
+
+  // Update a customized entry in the roster (model count, options, etc.)
+  const handleUpdateEntry = (entryId: number, updates: Partial<RosterEntry>) => {
+    setRoster(
+      roster.map((entry) =>
+        entry.entryId === entryId ? { ...entry, ...updates } : entry
+      )
+    );
   };
 
   const handleRemoveUnit = (entryId: number) => {
-    setRoster(roster.filter((entry) => entry.entryId !== entryId));
+    const updated = roster.filter((entry) => entry.entryId !== entryId);
+    setRoster(updated);
+    if (focusedEntryId === entryId) {
+      if (updated.length > 0) {
+        setFocusedEntryId(updated[updated.length - 1].entryId);
+      } else {
+        setFocusedEntryId(null);
+      }
+    }
+  };
+
+  const handleFocusEntry = (entry: RosterEntry) => {
+    setFocusedEntryId(entry.entryId);
   };
 
   // Switching game: reset army list and navigate to the new game
   const handleChangeGame = (gameId: string) => {
     setRoster([]);
-    setFocusedUnit(null);
+    setFocusedEntryId(null);
     router.push(`/?game=${gameId}`);
   };
 
   // Switching faction within the current game
   const handleChangeFaction = (slug: string) => {
     setRoster([]);
-    setFocusedUnit(null);
+    setFocusedEntryId(null);
     router.push(`/?game=${currentGame}&faction=${slug}`);
   };
+
+  // Find the entry currently selected for the datasheet panel
+  const focusedEntry = roster.find((entry) => entry.entryId === focusedEntryId) || null;
 
   return (
     <main className={styles.appContainer}>
@@ -120,8 +166,9 @@ export default function Workspace({
           <Panel defaultSize={40} minSize={20} className={styles.column}>
             <MusterList
               roster={roster}
-              focusedUnit={focusedUnit}
-              onFocusUnit={setFocusedUnit}
+              groups={faction.groups}
+              focusedEntryId={focusedEntryId}
+              onFocusEntry={handleFocusEntry}
               onRemoveUnit={handleRemoveUnit}
             />
           </Panel>
@@ -129,7 +176,11 @@ export default function Workspace({
           <Separator className={styles.resizeHandle} />
 
           <Panel defaultSize={35} minSize={20} className={styles.column}>
-            <Datasheet unit={focusedUnit} />
+            <Datasheet
+              entry={focusedEntry}
+              availableMagicItems={faction.magicItems || []}
+              onUpdateEntry={handleUpdateEntry}
+            />
           </Panel>
         </Group>
       </div>
