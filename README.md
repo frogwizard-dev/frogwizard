@@ -1,3 +1,6 @@
+# This is just me messing around with web dev and not meant to be used as a serious tool
+## got sick of ai being used in everything so I'm learning and building my own
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
