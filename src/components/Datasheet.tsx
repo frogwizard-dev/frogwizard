@@ -188,7 +188,7 @@ export default function Datasheet({
 
       {/* --- UNIT SIZE CONTROLS (The Old World) --- */}
       {unit.unitSizeConfig && (
-        <div className={styles.customizerSection}>
+        <div style={{ margin: '14px 0' }}>
           <h4>Unit Size</h4>
           <div className={styles.modelCountControls}>
             <button
@@ -219,19 +219,19 @@ export default function Datasheet({
 
       {/* --- CATEGORIZED UNIT OPTIONS (Mount, Weapons, Armour, Command) --- */}
       {unit.optionGroups && unit.optionGroups.length > 0 && (
-        <>
+        <div style={{ margin: '16px 0' }}>
+          <h3>Options</h3>
           {unit.optionGroups.map((group) => (
-            <div key={group.id} className={styles.customizerSection}>
-              <h4>
+            <div key={group.id} style={{ margin: '12px 0' }}>
+              <h4 style={{ margin: '6px 0 4px 0' }}>
                 {group.name}
                 {group.maxChoices === 1 && (
                   <span
                     style={{
-                      fontSize: '0.75em',
+                      fontSize: '0.8em',
                       fontWeight: 400,
                       opacity: 0.6,
-                      marginLeft: '8px',
-                      textTransform: 'none',
+                      marginLeft: '6px',
                     }}
                   >
                     (Pick 1)
@@ -351,12 +351,13 @@ export default function Datasheet({
               })}
             </div>
           ))}
-        </>
+        </div>
       )}
 
       {/* --- MAGIC ITEMS & HONOURS / VIRTUES (The Old World) --- */}
       {unit.magicPools && unit.magicPools.length > 0 && (
-        <>
+        <div style={{ margin: '16px 0' }}>
+          <h3>Magic Items</h3>
           {unit.magicPools.map((pool) => {
             const equippedInPool = (entry.selectedMagicItems || []).filter((item) =>
               pool.allowedTypes.includes(item.type)
@@ -375,54 +376,44 @@ export default function Datasheet({
             );
 
             return (
-              <div key={pool.name} className={styles.customizerSection}>
-                <div className={styles.magicPoolHeader}>
-                  <h4>{pool.name}</h4>
+              <div key={pool.name} style={{ margin: '12px 0' }}>
+                <h4 style={{ margin: '6px 0 4px 0' }}>
+                  {pool.name}
                   {maxPoints !== null ? (
-                    <span
-                      className={styles.budgetBadge}
-                      style={{
-                        backgroundColor:
-                          spentInPool > maxPoints ? '#7f1d1d' : undefined,
-                        color: spentInPool > maxPoints ? '#fca5a5' : undefined,
-                      }}
-                    >
-                      {spentInPool} / {maxPoints} pts
+                    <span style={{ fontSize: '0.85em', fontWeight: 400, opacity: 0.7, marginLeft: '8px' }}>
+                      ({spentInPool} / {maxPoints} pts)
                     </span>
                   ) : (
                     spentInPool > 0 && (
-                      <span className={styles.budgetBadge}>+{spentInPool} pts</span>
+                      <span style={{ fontSize: '0.85em', fontWeight: 400, opacity: 0.7, marginLeft: '8px' }}>
+                        (+{spentInPool} pts)
+                      </span>
                     )
                   )}
-                </div>
+                </h4>
 
                 {/* Currently equipped items in this pool */}
                 {equippedInPool.map((item) => (
-                  <div key={item.id} className={styles.magicItemCard}>
-                    <div className={styles.magicItemTitleRow}>
-                      <strong>
-                        {item.name}{' '}
-                        <span style={{ color: '#38bdf8' }}>
-                          ({item.points} pts)
-                        </span>
-                      </strong>
+                  <div key={item.id} style={{ margin: '6px 0', paddingLeft: '8px' }}>
+                    <div>
+                      <strong>{item.name}</strong>{' '}
+                      <span style={{ color: '#38bdf8' }}>({item.points} pts)</span>{' '}
                       <button
                         type="button"
-                        className={styles.magicRemoveBtn}
                         onClick={() => handleRemoveMagicItem(item.id)}
-                        title="Remove item"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ff6b6b',
+                          cursor: 'pointer',
+                          fontSize: '0.8em',
+                        }}
                       >
-                        ✕
+                        [remove]
                       </button>
                     </div>
                     {item.description && (
-                      <p
-                        style={{
-                          fontSize: '0.8em',
-                          opacity: 0.8,
-                          marginTop: '4px',
-                        }}
-                      >
+                      <p style={{ fontSize: '0.85em', opacity: 0.75, margin: '2px 0 0 0' }}>
                         {item.description}
                       </p>
                     )}
@@ -459,7 +450,7 @@ export default function Datasheet({
               </div>
             );
           })}
-        </>
+        </div>
       )}
 
       {/* --- STATS PROFILE (MAIN UNIT & MOUNTS) --- */}
